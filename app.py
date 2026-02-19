@@ -10,7 +10,7 @@ ps = PorterStemmer()
 
 # Ensure required NLTK data is available on startup (helps when deploying to clean hosts)
 # quiet=True avoids verbose output during app startup
-nltk.download('punkt', quiet=True)
+nltk.download('punkt_tab', quiet=True)
 nltk.download('stopwords', quiet=True)
 
 # Cache stopwords once (may raise LookupError if downloads failed)
@@ -25,7 +25,14 @@ def transform_text(text):
         return ""
 
     text = text.lower()
-    tokens = nltk.word_tokenize(text)
+    
+    # Try NLTK tokenization, fall back to simple split if NLTK data not available
+    try:
+        tokens = nltk.word_tokenize(text)
+    except LookupError:
+        # Fallback: simple whitespace and punctuation split
+        import re
+        tokens = re.findall(r'\b\w+\b', text)
 
     # keep only alphanumeric tokens
     tokens = [t for t in tokens if t.isalnum()]
